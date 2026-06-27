@@ -5,31 +5,38 @@ import {
   getCurrentSeller,
   getSellerOrders,
   updateOrderStatus,
-} from "@/lib/sellerStore";
+} from "@/lib/db";
 import { formatPrice } from "@/lib/mockData";
 
 export default function SellerOrdersPage() {
   const [seller, setSeller] = useState(null);
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const s = getCurrentSeller();
-    if (!s) return;
-    setSeller(s);
-    setOrders(getSellerOrders(s.id));
+    let active = true;
+    (async () => {
+      const s = await getCurrentSeller();
+      if (!active || !s) return;
+      const o = await getSellerOrders(s.id);
+      if (!active) return;
+      setSeller(s);
+      setOrders(o);
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  function refresh() {
-    setOrders(getSellerOrders(seller.id));
+  async function handleStatusChange(orderId, status) {
+    await updateOrderStatus(orderId, status);
+    setOrders(await getSellerOrders(seller.id));
   }
 
-  function handleStatusChange(orderId, status) {
-    updateOrderStatus(orderId, status);
-    refresh();
-  }
-
-  if (!seller) return null;
+  if (loading || !seller)
+    return <div className="p-10 text-slate-500">جاري التحميل...</div>;
 
   const counts = {
     all: orders.length,

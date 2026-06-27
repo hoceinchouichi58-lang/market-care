@@ -7,28 +7,39 @@ import {
   getCurrentSeller,
   getSellerProducts,
   deleteProduct,
-} from "@/lib/sellerStore";
-import { categories, formatPrice, getCategoryById } from "@/lib/mockData";
+} from "@/lib/db";
+import { formatPrice, getCategoryById } from "@/lib/mockData";
 
 export default function SellerProductsPage() {
   const [seller, setSeller] = useState(null);
   const [products, setProducts] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const s = getCurrentSeller();
-    if (!s) return;
-    setSeller(s);
-    setProducts(getSellerProducts(s.id));
+    let active = true;
+    (async () => {
+      const s = await getCurrentSeller();
+      if (!active || !s) return;
+      const p = await getSellerProducts(s.id);
+      if (!active) return;
+      setSeller(s);
+      setProducts(p);
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  function handleDelete(id) {
+  async function handleDelete(id) {
     if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
-    deleteProduct(id);
-    setProducts(getSellerProducts(seller.id));
+    await deleteProduct(id);
+    setProducts(await getSellerProducts(seller.id));
   }
 
-  if (!seller) return null;
+  if (loading || !seller)
+    return <div className="p-10 text-slate-500">جاري التحميل...</div>;
 
   const filtered =
     filter === "all"

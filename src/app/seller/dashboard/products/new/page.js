@@ -2,17 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getCurrentSeller } from "@/lib/sellerStore";
+import { getCurrentSeller } from "@/lib/db";
 import ProductForm from "@/components/ProductForm";
 
 export default function NewProductPage() {
   const [seller, setSeller] = useState(null);
 
   useEffect(() => {
-    setSeller(getCurrentSeller());
+    let active = true;
+    getCurrentSeller().then((s) => active && setSeller(s));
+    return () => {
+      active = false;
+    };
   }, []);
 
-  if (!seller) return null;
+  if (!seller)
+    return <div className="p-10 text-slate-500">جاري التحميل...</div>;
 
   return (
     <div className="p-6 md:p-10 max-w-3xl">

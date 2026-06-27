@@ -5,24 +5,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { loginSeller } from "@/lib/sellerStore";
+import { loginSeller } from "@/lib/db";
 
 export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ phone: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      loginSeller(form.phone, form.password);
+      await loginSeller(form.email, form.password);
       router.push("/seller/dashboard");
     } catch (err) {
       setError(err.message);
@@ -54,16 +54,17 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                رقم الهاتف
+                البريد الإلكتروني
               </label>
               <input
-                type="tel"
-                name="phone"
+                type="email"
+                name="email"
                 required
-                value={form.phone}
+                value={form.email}
                 onChange={handleChange}
-                placeholder="0555 12 34 56"
+                placeholder="shop@example.com"
                 className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:border-teal-500"
+                dir="ltr"
               />
             </div>
 

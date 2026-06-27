@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { categories } from "@/lib/mockData";
-import { addProduct, updateProduct } from "@/lib/sellerStore";
+import { addProduct, updateProduct } from "@/lib/db";
 
 const SAMPLE_IMAGES = [
   "https://images.unsplash.com/photo-1559757175-7cb036e0d465?w=400",
@@ -36,19 +36,28 @@ export default function ProductForm({ sellerId, product = null }) {
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   }
 
-  function handleSubmit(e) {
+  const [error, setError] = useState("");
+
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
     setLoading(true);
     const data = {
       ...form,
       price: Number(form.price),
     };
-    if (isEdit) {
-      updateProduct(product.id, data);
-    } else {
-      addProduct(sellerId, data);
+    try {
+      if (isEdit) {
+        await updateProduct(product.id, data);
+      } else {
+        await addProduct(sellerId, data);
+      }
+      router.push("/seller/dashboard/products");
+      router.refresh();
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
     }
-    router.push("/seller/dashboard/products");
   }
 
   return (
@@ -204,6 +213,12 @@ export default function ProductForm({ sellerId, product = null }) {
           </div>
         </label>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
+          ⚠️ {error}
+        </div>
+      )}
 
       <div className="flex gap-3">
         <button

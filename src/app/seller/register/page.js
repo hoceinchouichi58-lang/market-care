@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { registerSeller, seedDemoOrders } from "@/lib/sellerStore";
+import { registerSeller } from "@/lib/db";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,13 +27,12 @@ export default function RegisterPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const seller = registerSeller(form);
-      seedDemoOrders(seller.id);
+      await registerSeller(form);
       router.push("/seller/dashboard");
     } catch (err) {
       setError(err.message);
@@ -115,11 +114,12 @@ export default function RegisterPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  البريد الإلكتروني
+                  البريد الإلكتروني <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   name="email"
+                  required
                   value={form.email}
                   onChange={handleChange}
                   placeholder="shop@example.com"

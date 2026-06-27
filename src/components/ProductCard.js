@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getSellerById, getCategoryById, formatPrice } from "@/lib/mockData";
+import { getCategoryById, formatPrice } from "@/lib/mockData";
 
 export default function ProductCard({ product }) {
-  const seller = getSellerById(product.sellerId);
+  const seller = product.seller;
   const category = getCategoryById(product.categoryId);
 
   return (
@@ -12,13 +12,19 @@ export default function ProductCard({ product }) {
       className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-lg hover:border-teal-200 transition-all"
     >
       <div className="relative aspect-square bg-slate-100 overflow-hidden">
-        <Image
-          src={product.imageUrl}
-          alt={product.name}
-          fill
-          sizes="(max-width: 768px) 50vw, 25vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        {product.imageUrl ? (
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-5xl text-slate-300">
+            📦
+          </div>
+        )}
         {!product.available && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <span className="bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCurrentSeller, updateCurrentSeller } from "@/lib/sellerStore";
+import { getCurrentSeller, updateCurrentSeller } from "@/lib/db";
 
 export default function ProfilePage() {
   const [seller, setSeller] = useState(null);
@@ -9,11 +9,18 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [error, setError] = useState("");
+
   useEffect(() => {
-    const s = getCurrentSeller();
-    if (!s) return;
-    setSeller(s);
-    setForm({ ...s });
+    let active = true;
+    getCurrentSeller().then((s) => {
+      if (!active || !s) return;
+      setSeller(s);
+      setForm({ ...s });
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   function handleChange(e) {
@@ -21,14 +28,20 @@ export default function ProfilePage() {
     setSaved(false);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError("");
     setSaving(true);
-    const updated = updateCurrentSeller(form);
-    setSeller(updated);
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      const updated = await updateCurrentSeller(form);
+      setSeller(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (!form) return null;
@@ -45,6 +58,11 @@ export default function ProfilePage() {
       {saved && (
         <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-3 mb-6 text-sm flex items-center gap-2">
           ✅ تم حفظ التعديلات بنجاح
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 mb-6 text-sm flex items-center gap-2">
+          ⚠️ {error}
         </div>
       )}
 

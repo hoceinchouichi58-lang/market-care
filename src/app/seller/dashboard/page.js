@@ -6,23 +6,37 @@ import {
   getCurrentSeller,
   getSellerProducts,
   getSellerOrders,
-} from "@/lib/sellerStore";
+} from "@/lib/db";
 import { formatPrice } from "@/lib/mockData";
 
 export default function DashboardHome() {
   const [seller, setSeller] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const s = getCurrentSeller();
-    if (!s) return;
-    setSeller(s);
-    setProducts(getSellerProducts(s.id));
-    setOrders(getSellerOrders(s.id));
+    let active = true;
+    (async () => {
+      const s = await getCurrentSeller();
+      if (!active || !s) return;
+      const [p, o] = await Promise.all([
+        getSellerProducts(s.id),
+        getSellerOrders(s.id),
+      ]);
+      if (!active) return;
+      setSeller(s);
+      setProducts(p);
+      setOrders(o);
+      setLoading(false);
+    })();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  if (!seller) return null;
+  if (loading || !seller)
+    return <div className="p-10 text-slate-500">جاري التحميل...</div>;
 
   const pendingOrders = orders.filter((o) => o.status === "pending");
   const totalRevenue = orders

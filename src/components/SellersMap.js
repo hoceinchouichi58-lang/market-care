@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { sellers } from "@/lib/mockData";
 
-export default function SellersMap() {
+export default function SellersMap({ sellers = [] }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [activeSeller, setActiveSeller] = useState(null);

@@ -4,45 +4,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import ProductsFilters from "@/components/ProductsFilters";
-import { products, categories, getCategoryById } from "@/lib/mockData";
+import { getCategoryById } from "@/lib/mockData";
+import { getAllProducts } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "كل المنتجات — MARKET Care",
   description: "تصفح كل المنتجات الشبه طبية والأغذية المتخصصة المتوفرة في المنصة",
 };
-
-function filterProducts({ q, category, sort }) {
-  let result = [...products];
-
-  if (q) {
-    const query = q.toLowerCase().trim();
-    result = result.filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query)
-    );
-  }
-
-  if (category) {
-    result = result.filter((p) => p.categoryId === category);
-  }
-
-  switch (sort) {
-    case "price-asc":
-      result.sort((a, b) => a.price - b.price);
-      break;
-    case "price-desc":
-      result.sort((a, b) => b.price - a.price);
-      break;
-    case "available":
-      result = result.filter((p) => p.available);
-      break;
-    default:
-      result.sort((a, b) => b.id - a.id);
-  }
-
-  return result;
-}
 
 export default async function ProductsPage({ searchParams }) {
   const sp = await searchParams;
@@ -50,7 +20,7 @@ export default async function ProductsPage({ searchParams }) {
   const category = sp?.category || "";
   const sort = sp?.sort || "newest";
 
-  const filtered = filterProducts({ q, category, sort });
+  const filtered = await getAllProducts({ q, category, sort });
   const activeCategory = category ? getCategoryById(category) : null;
 
   return (

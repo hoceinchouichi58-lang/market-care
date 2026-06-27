@@ -3,10 +3,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import CategoryGrid from "@/components/CategoryGrid";
-import { products } from "@/lib/mockData";
+import { getFeaturedProducts } from "@/lib/db";
 
-export default function Home() {
-  const featured = products.slice(0, 8);
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const featured = await getFeaturedProducts(8);
 
   return (
     <>
@@ -95,11 +97,29 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {featured.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+            <div className="text-5xl mb-4">🏪</div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
+              لا توجد منتجات بعد
+            </h3>
+            <p className="text-slate-600 mb-6">
+              كن أول بائع يعرض منتجاته على المنصة!
+            </p>
+            <Link
+              href="/seller/register"
+              className="inline-block bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-xl font-semibold"
+            >
+              سجّل كبائع
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {featured.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* How it works */}

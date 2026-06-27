@@ -2,27 +2,32 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { getCurrentSeller, getProductById } from "@/lib/sellerStore";
+import { getCurrentSeller, getProductById } from "@/lib/db";
 import ProductForm from "@/components/ProductForm";
 
 export default function EditProductPage({ params }) {
   const { id } = use(params);
-  const router = useRouter();
   const [seller, setSeller] = useState(null);
   const [product, setProduct] = useState(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const s = getCurrentSeller();
-    if (!s) return;
-    setSeller(s);
-    const p = getProductById(id);
-    if (!p || p.sellerId !== s.id) {
-      setNotFound(true);
-    } else {
-      setProduct(p);
-    }
+    let active = true;
+    (async () => {
+      const s = await getCurrentSeller();
+      if (!active || !s) return;
+      setSeller(s);
+      const p = await getProductById(id);
+      if (!active) return;
+      if (!p || p.sellerId !== s.id) {
+        setNotFound(true);
+      } else {
+        setProduct(p);
+      }
+    })();
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   if (notFound) {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getCurrentSeller, logoutSeller } from "@/lib/sellerStore";
+import { getCurrentSeller, logoutSeller } from "@/lib/db";
 
 const menuItems = [
   { href: "/seller/dashboard", label: "الرئيسية", icon: "📊", exact: true },
@@ -19,16 +19,22 @@ export default function DashboardSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const current = getCurrentSeller();
-    if (!current) {
-      router.replace("/seller/login");
-      return;
-    }
-    setSeller(current);
+    let active = true;
+    getCurrentSeller().then((current) => {
+      if (!active) return;
+      if (!current) {
+        router.replace("/seller/login");
+        return;
+      }
+      setSeller(current);
+    });
+    return () => {
+      active = false;
+    };
   }, [router]);
 
-  function handleLogout() {
-    logoutSeller();
+  async function handleLogout() {
+    await logoutSeller();
     router.push("/");
   }
 

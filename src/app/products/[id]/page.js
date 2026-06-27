@@ -4,16 +4,15 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import {
-  products,
-  getSellerById,
-  getCategoryById,
-  formatPrice,
-} from "@/lib/mockData";
+import ProductOrderSection from "@/components/ProductOrderSection";
+import { getCategoryById, formatPrice } from "@/lib/mockData";
+import { getProductWithSeller, getRelatedProducts } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
-  const product = products.find((p) => p.id === Number(id));
+  const product = await getProductWithSeller(id);
   if (!product) return { title: "منتج غير موجود" };
   return {
     title: `${product.name} — MARKET Care`,
@@ -23,15 +22,13 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductDetailPage({ params }) {
   const { id } = await params;
-  const product = products.find((p) => p.id === Number(id));
+  const product = await getProductWithSeller(id);
 
   if (!product) notFound();
 
-  const seller = getSellerById(product.sellerId);
+  const seller = product.seller;
   const category = getCategoryById(product.categoryId);
-  const related = products
-    .filter((p) => p.categoryId === product.categoryId && p.id !== product.id)
-    .slice(0, 4);
+  const related = await getRelatedProducts(product.categoryId, product.id, 4);
 
   return (
     <>
@@ -59,14 +56,20 @@ export default async function ProductDetailPage({ params }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Image */}
           <div className="relative aspect-square bg-white rounded-3xl overflow-hidden border border-slate-200">
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-              priority
-            />
+            {product.imageUrl ? (
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                priority
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-7xl text-slate-300">
+                📦
+              </div>
+            )}
             {!product.available && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <span className="bg-red-600 text-white text-lg font-bold px-6 py-2 rounded-full">
@@ -148,23 +151,8 @@ export default async function ProductDetailPage({ params }) {
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                disabled={!product.available}
-                className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-semibold transition shadow-md"
-              >
-                🛒 طلب المنتج
-              </button>
-              {seller && (
-                <a
-                  href={`tel:${seller.phone.replace(/\s/g, "")}`}
-                  className="flex-1 bg-white hover:bg-slate-50 border-2 border-slate-300 text-slate-800 py-3.5 rounded-xl font-semibold transition text-center"
-                >
-                  📞 اتصل بالبائع
-                </a>
-              )}
-            </div>
+            {/* Action Buttons + Order Form */}
+            <ProductOrderSection product={product} seller={seller} />
           </div>
         </div>
 

@@ -2,14 +2,21 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SellersMap from "@/components/SellersMap";
-import { sellers, products } from "@/lib/mockData";
+import { getApprovedSellers, getAllProducts } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "البائعون — MARKET Care",
   description: "اكتشف البائعين المتخصصين القريبين منك في الجزائر",
 };
 
-export default function SellersPage() {
+export default async function SellersPage() {
+  const sellers = await getApprovedSellers();
+  const allProducts = await getAllProducts();
+  const countFor = (sellerId) =>
+    allProducts.filter((p) => p.sellerId === sellerId).length;
+
   return (
     <>
       <Header />
@@ -28,22 +35,33 @@ export default function SellersPage() {
 
       <section className="max-w-7xl mx-auto px-4 py-10">
         {/* Map */}
-        <div className="mb-10">
-          <SellersMap />
-          <p className="text-xs text-slate-500 mt-2 text-center">
-            💡 انقر على أي علامة على الخريطة لعرض معلومات البائع
-          </p>
-        </div>
+        {sellers.length > 0 && (
+          <div className="mb-10">
+            <SellersMap sellers={sellers} />
+            <p className="text-xs text-slate-500 mt-2 text-center">
+              💡 انقر على أي علامة على الخريطة لعرض معلومات البائع
+            </p>
+          </div>
+        )}
 
         {/* Sellers Grid */}
         <h2 className="text-2xl font-bold text-slate-900 mb-6">
           قائمة البائعين
         </h2>
+        {sellers.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center mb-6">
+            <div className="text-5xl mb-4">🏪</div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
+              لا يوجد بائعون بعد
+            </h3>
+            <p className="text-slate-600">
+              كن أول بائع ينضم إلى المنصة!
+            </p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {sellers.map((seller) => {
-            const productsCount = products.filter(
-              (p) => p.sellerId === seller.id
-            ).length;
+            const productsCount = countFor(seller.id);
             return (
               <div
                 key={seller.id}
@@ -97,6 +115,7 @@ export default function SellersPage() {
             );
           })}
         </div>
+        )}
 
         {/* CTA */}
         <div className="mt-12 bg-gradient-to-l from-slate-900 to-slate-800 rounded-3xl p-8 md:p-10 text-white text-center">
