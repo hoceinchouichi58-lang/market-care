@@ -29,8 +29,8 @@ export default function Footer() {
           <h3 className="font-semibold text-white mb-4">للبائعين</h3>
           <ul className="space-y-2 text-sm">
             <li><a href="/seller/register" className="hover:text-teal-400">انضم كبائع</a></li>
-            <li><a href="/seller/dashboard" className="hover:text-teal-400">لوحة التحكم</a></li>
-            <li><a href="/help" className="hover:text-teal-400">المساعدة</a></li>
+            <li><a href="/seller/login" className="hover:text-teal-400">تسجيل الدخول</a></li>
+            <li><a href="/about" className="hover:text-teal-400">عن المشروع</a></li>
           </ul>
         </div>
 

@@ -19,8 +19,9 @@ export default async function ProductsPage({ searchParams }) {
   const q = sp?.q || "";
   const category = sp?.category || "";
   const sort = sp?.sort || "newest";
+  const seller = sp?.seller || "";
 
-  const filtered = await getAllProducts({ q, category, sort });
+  const filtered = await getAllProducts({ q, category, sort, seller });
   const activeCategory = category ? getCategoryById(category) : null;
 
   return (

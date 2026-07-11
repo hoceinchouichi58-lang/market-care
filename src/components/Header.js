@@ -39,7 +39,7 @@ export default function Header() {
             انضم كبائع
           </Link>
           <Link
-            href="/login"
+            href="/seller/login"
             className="px-4 py-2 text-sm font-medium bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition shadow-sm"
           >
             دخول

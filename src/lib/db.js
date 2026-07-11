@@ -267,10 +267,11 @@ export async function createOrder(order) {
 // ============================================================
 // قراءات عامة (للزوار - بدون تسجيل دخول)
 // ============================================================
-export async function getAllProducts({ q, category, sort } = {}) {
+export async function getAllProducts({ q, category, sort, seller } = {}) {
   let query = supabase.from("products").select("*, sellers(*)");
 
   if (category) query = query.eq("category_id", category);
+  if (seller) query = query.eq("seller_id", seller);
   if (q) query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
 
   if (sort === "price-asc") query = query.order("price", { ascending: true });
