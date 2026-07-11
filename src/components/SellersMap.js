@@ -41,9 +41,14 @@ export default function SellersMap({ sellers = [] }) {
     map.current.addControl(new maplibregl.NavigationControl(), "top-left");
 
     sellers.forEach((seller) => {
+      // العنصر الجذر: تتحكم فيه الخريطة لتحديد الموقع — لا نضع عليه أي transform
       const el = document.createElement("div");
       el.className = "seller-marker";
-      el.style.cssText = `
+      el.style.cssText = `width: 36px; height: 36px; cursor: pointer;`;
+
+      // العنصر الداخلي: هو الذي يحمل شكل الدبوس والتدوير
+      const pin = document.createElement("div");
+      pin.style.cssText = `
         width: 36px;
         height: 36px;
         background: linear-gradient(135deg, #14b8a6, #059669);
@@ -51,7 +56,6 @@ export default function SellersMap({ sellers = [] }) {
         border-radius: 50% 50% 50% 0;
         transform: rotate(-45deg);
         box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -59,12 +63,14 @@ export default function SellersMap({ sellers = [] }) {
         font-size: 16px;
         transition: transform 0.2s;
       `;
-      el.innerHTML = `<div style="transform: rotate(45deg);">🏪</div>`;
+      pin.innerHTML = `<div style="transform: rotate(45deg);">🏪</div>`;
+      el.appendChild(pin);
+
       el.addEventListener("mouseenter", () => {
-        el.style.transform = "rotate(-45deg) scale(1.15)";
+        pin.style.transform = "rotate(-45deg) scale(1.15)";
       });
       el.addEventListener("mouseleave", () => {
-        el.style.transform = "rotate(-45deg) scale(1)";
+        pin.style.transform = "rotate(-45deg) scale(1)";
       });
       el.addEventListener("click", () => {
         setActiveSeller(seller);
@@ -75,7 +81,7 @@ export default function SellersMap({ sellers = [] }) {
         });
       });
 
-      new maplibregl.Marker({ element: el })
+      new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([seller.lng, seller.lat])
         .addTo(map.current);
     });
